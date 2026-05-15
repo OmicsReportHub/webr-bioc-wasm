@@ -1,0 +1,8 @@
+# R package references for r-wasm/actions.
+# Start small; add heavier packages after the workflow is passing.
+bioc::limma
+bioc::edgeR
+cran::ggplot2
+cran::matrixStats
+cran::jsonlite
+cran::Matrix

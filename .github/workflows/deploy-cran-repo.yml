@@ -1,0 +1,19 @@
+# Workflow derived from https://github.com/r-wasm/actions/tree/v2/examples
+# It reads ./packages and deploys a CRAN-like R WebAssembly package repository to GitHub Pages.
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch: {}
+
+name: Build and deploy wasm R package repository
+
+jobs:
+  deploy-cran-repo:
+    uses: r-wasm/actions/.github/workflows/deploy-cran-repo.yml@v2
+    permissions:
+      # To download GitHub Packages within action
+      repository-projects: read
+      # For publishing to pages environment
+      pages: write
+      id-token: write
