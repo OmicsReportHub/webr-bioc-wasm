@@ -17,7 +17,9 @@ OmicsReportHub/webr-bioc-wasm
 
 ## Starter package list
 
-The `packages` file starts with a small RNA-seq-friendly set:
+The `packages` file starts with a small RNA-seq-friendly set. Keep this file to
+package references only; `r-wasm/actions` passes every whitespace-separated
+token to `pkgdepends`, so comments in `packages` are treated as package names.
 
 ```text
 bioc::limma

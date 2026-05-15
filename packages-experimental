@@ -1,5 +1,3 @@
-# Heavier packages to try after the starter package repository is working.
-# Move one package at a time into `packages`, then run the workflow.
 bioc::DESeq2
 bioc::SummarizedExperiment
 bioc::S4Vectors
