@@ -10,10 +10,74 @@ name: Build and deploy wasm R package repository
 
 jobs:
   deploy-cran-repo:
-    uses: r-wasm/actions/.github/workflows/deploy-cran-repo.yml@v2
+    runs-on: ubuntu-22.04
+
+    concurrency:
+      group: github-pages
+      cancel-in-progress: true
+
     permissions:
+      contents: read
       # To download GitHub Packages within action
       repository-projects: read
       # For publishing to pages environment
       pages: write
       id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout calling repository
+        uses: actions/checkout@v4
+
+      - name: Checkout r-wasm/actions repository
+        uses: actions/checkout@v4
+        with:
+          ref: v2
+          repository: r-wasm/actions
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: .actions
+
+      - name: Retrieve packages from `./packages` file
+        id: packages-file
+        shell: Rscript {0}
+        run: |
+          if (!file.exists("./packages")) {
+            stop("`./packages` file not found")
+          }
+          pkgs <- unique(trimws(readLines("./packages", warn = FALSE)))
+          pkgs <- pkgs[nzchar(pkgs) & !startsWith(pkgs, "#")]
+          cat("pkgs=", paste0(pkgs, collapse = ","), "\n", file = Sys.getenv("GITHUB_OUTPUT"), sep = "", append = TRUE)
+
+      - name: Patch r-wasm package resolver workaround
+        shell: python
+        run: |
+          from pathlib import Path
+
+          # Work around r-wasm/rwasm#56 by skipping the built-in webR remotes
+          # resolver. None of this repository's starter packages need those
+          # source overrides.
+          path = Path(".actions/build-rwasm/code.R")
+          text = path.read_text()
+          old = 'rwasm::add_pkg(packages, repo_dir = repo_path, compress = compress)'
+          new = 'rwasm::add_pkg(packages, repo_dir = repo_path, remotes = NULL, compress = compress)'
+          if old not in text:
+              raise SystemExit("Expected rwasm::add_pkg() call was not found")
+          path.write_text(text.replace(old, new))
+
+      - name: Build wasm repo
+        uses: ./.actions/build-rwasm
+        with:
+          packages: ${{ steps.packages-file.outputs.pkgs }}
+          repo-path: _site
+          webr-image: ghcr.io/r-wasm/webr:main
+          compress: false
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

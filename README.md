@@ -27,10 +27,14 @@ bioc::edgeR
 cran::ggplot2
 cran::matrixStats
 cran::jsonlite
-cran::Matrix
 ```
 
 `DESeq2` is intentionally not in the default `packages` file because it has a larger dependency stack. Try `limma` and `edgeR` first, then move packages from `packages-experimental` into `packages` once the build path is working.
+
+`Matrix` is intentionally omitted from this custom repository list. It is a
+recommended R package available from webR-compatible package repositories, and
+asking `pkgdepends` to resolve it directly currently produces duplicate source
+rows.
 
 ## Create and push this repo
 

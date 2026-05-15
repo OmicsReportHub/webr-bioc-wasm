@@ -3,4 +3,3 @@ bioc::edgeR
 cran::ggplot2
 cran::matrixStats
 cran::jsonlite
-cran::Matrix
